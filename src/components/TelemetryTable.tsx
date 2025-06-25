@@ -1,4 +1,3 @@
-
 import { TelemetryData } from '../pages/Index';
 import { Badge } from '@/components/ui/badge';
 
@@ -65,8 +64,8 @@ export const TelemetryTable = ({ telemetryData }: TelemetryTableProps) => {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">Telemetry Data</h2>
         <div className="flex gap-2">
-          <Badge className="bg-green-600 hover:bg-green-700">Connected</Badge>
-          <Badge className="bg-blue-600 hover:bg-blue-700">
+          <Badge className="bg-green-700 hover:bg-green-800">Connected</Badge>
+          <Badge className="bg-blue-700 hover:bg-blue-800">
             Packets: {telemetryData?.PacketCount || '00000'}
           </Badge>
         </div>
@@ -74,8 +73,8 @@ export const TelemetryTable = ({ telemetryData }: TelemetryTableProps) => {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Flight Data */}
-        <div className="bg-slate-800/30 backdrop-blur border border-slate-700 rounded-lg overflow-hidden">
-          <div className="bg-slate-700/50 p-4 border-b border-slate-600">
+        <div className="bg-slate-900/40 backdrop-blur border border-slate-600 rounded-lg overflow-hidden">
+          <div className="bg-slate-800/60 p-4 border-b border-slate-500">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
               <h3 className="text-white font-semibold">Flight Data</h3>
@@ -85,8 +84,8 @@ export const TelemetryTable = ({ telemetryData }: TelemetryTableProps) => {
           <div className="p-0">
             <div className="space-y-0">
               {flightDataFields.map((field, index) => (
-                <div key={field.key + index} className="flex justify-between items-center p-4 border-b border-slate-700/50 last:border-b-0 hover:bg-slate-700/20 transition-colors">
-                  <span className="text-slate-300 font-medium text-sm">{field.label}</span>
+                <div key={field.key + index} className="flex justify-between items-center p-4 border-b border-slate-600/50 last:border-b-0 hover:bg-slate-800/30 transition-colors">
+                  <span className="text-slate-200 font-medium text-sm">{field.label}</span>
                   <span className="text-white font-mono text-sm">
                     {formatValue(field.value, field.key)}
                   </span>
@@ -95,17 +94,17 @@ export const TelemetryTable = ({ telemetryData }: TelemetryTableProps) => {
             </div>
           </div>
 
-          <div className="p-4 bg-slate-700/20 border-t border-slate-600">
+          <div className="p-4 bg-slate-800/30 border-t border-slate-600">
             <div className="flex items-center justify-between text-xs">
               <span className="text-green-400">● Last update: {new Date().toLocaleTimeString()}</span>
-              <span className="text-slate-400">FSW State: LAUNCH_WAIT</span>
+              <span className="text-slate-300">FSW State: LAUNCH_WAIT</span>
             </div>
           </div>
         </div>
 
         {/* Sensor Data */}
-        <div className="bg-slate-800/30 backdrop-blur border border-slate-700 rounded-lg overflow-hidden">
-          <div className="bg-slate-700/50 p-4 border-b border-slate-600">
+        <div className="bg-slate-900/40 backdrop-blur border border-slate-600 rounded-lg overflow-hidden">
+          <div className="bg-slate-800/60 p-4 border-b border-slate-500">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               <h3 className="text-white font-semibold">Sensor Data</h3>
@@ -115,8 +114,8 @@ export const TelemetryTable = ({ telemetryData }: TelemetryTableProps) => {
           <div className="p-0">
             <div className="space-y-0">
               {sensorDataFields.map((field, index) => (
-                <div key={field.key + index} className="flex justify-between items-center p-4 border-b border-slate-700/50 last:border-b-0 hover:bg-slate-700/20 transition-colors">
-                  <span className="text-slate-300 font-medium text-sm">{field.label}</span>
+                <div key={field.key + index} className="flex justify-between items-center p-4 border-b border-slate-600/50 last:border-b-0 hover:bg-slate-800/30 transition-colors">
+                  <span className="text-slate-200 font-medium text-sm">{field.label}</span>
                   <span className="text-white font-mono text-sm">
                     {formatValue(field.value, field.key)}
                   </span>
@@ -125,9 +124,9 @@ export const TelemetryTable = ({ telemetryData }: TelemetryTableProps) => {
             </div>
           </div>
 
-          <div className="p-4 bg-slate-700/20 border-t border-slate-600">
+          <div className="p-4 bg-slate-800/30 border-t border-slate-600">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">TEAM: {telemetryData?.Team_Id || '2024-ASI-CANSAT-020'}</span>
+              <span className="text-slate-300">TEAM: {telemetryData?.Team_Id || '2024-ASI-CANSAT-020'}</span>
               <span className="text-blue-400">GPS Sats: {telemetryData?.GpsSats || '0'}</span>
             </div>
           </div>

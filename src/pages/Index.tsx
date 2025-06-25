@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { TelemetryCharts } from '../components/TelemetryCharts';
@@ -34,9 +33,22 @@ export interface TelemetryData {
   RotZ: string;
 }
 
+export interface ChartDataPoint {
+  time: string;
+  timestamp: number;
+  temperature: number;
+  voltage: number;
+  altitude: number;
+  pressure: number;
+  tiltX: number;
+  tiltY: number;
+  rotZ: number;
+}
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState<'telemetry' | 'graphs'>('graphs');
   const [telemetryData, setTelemetryData] = useState<TelemetryData | null>(null);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
@@ -49,6 +61,28 @@ const Index = () => {
           setTelemetryData(data);
           setIsConnected(true);
           setLastUpdate(new Date());
+          
+          // Add new data point to chart data
+          const now = Date.now();
+          const newDataPoint: ChartDataPoint = {
+            time: new Date().toLocaleTimeString(),
+            timestamp: now,
+            temperature: parseFloat(data.Temperature) || 0,
+            voltage: parseFloat(data.Voltage) || 0,
+            altitude: parseFloat(data.Altitude) || 0,
+            pressure: parseFloat(data.Pressure) || 0,
+            tiltX: parseFloat(data.TiltX) || 0,
+            tiltY: parseFloat(data.TiltY) || 0,
+            rotZ: parseFloat(data.RotZ) || 0,
+          };
+
+          setChartData(prev => {
+            const updated = [...prev, newDataPoint];
+            // Keep only data from last 60 seconds
+            const cutoffTime = now - 60000;
+            return updated.filter(point => point.timestamp > cutoffTime);
+          });
+          
           console.log('Telemetry data received:', data);
         }
       } else {
@@ -73,7 +107,7 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
         
         <main className="flex-1 flex flex-col">
@@ -85,7 +119,7 @@ const Index = () => {
           
           <div className="flex-1 p-6">
             {activeTab === 'graphs' ? (
-              <TelemetryCharts telemetryData={telemetryData} />
+              <TelemetryCharts chartData={chartData} />
             ) : (
               <TelemetryTable telemetryData={telemetryData} />
             )}
