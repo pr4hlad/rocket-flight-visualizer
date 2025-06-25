@@ -32,14 +32,26 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
   const [selectedChart, setSelectedChart] = useState<string | null>(null);
 
+  // Filter data to show only the last 60 seconds
+  const getFilteredData = () => {
+    if (chartData.length === 0) return [];
+    
+    const now = Date.now();
+    const sixtySecondsAgo = now - 60000; // 60 seconds in milliseconds
+    
+    return chartData.filter(point => point.timestamp > sixtySecondsAgo);
+  };
+
+  const filteredData = getFilteredData();
+
   const getCurrentValue = (field: keyof ChartDataPoint) => {
-    if (chartData.length === 0) return 0;
-    return chartData[chartData.length - 1][field];
+    if (filteredData.length === 0) return 0;
+    return filteredData[filteredData.length - 1][field];
   };
 
   const getMinMaxValues = (field: keyof ChartDataPoint) => {
-    if (chartData.length === 0) return { min: 0, max: 0 };
-    const values = chartData.map(point => point[field] as number);
+    if (filteredData.length === 0) return { min: 0, max: 0 };
+    const values = filteredData.map(point => point[field] as number);
     return {
       min: Math.min(...values),
       max: Math.max(...values)
@@ -102,20 +114,13 @@ export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
     return tickItem.split(':').slice(1).join(':');
   };
 
-  const getDomain = () => {
-    if (chartData.length === 0) return ['dataMin', 'dataMax'];
-    const now = Date.now();
-    const sixtySecondsAgo = now - 60000;
-    return [sixtySecondsAgo, now];
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">Interactive Graphs</h2>
         <div className="flex gap-2">
           <div className="px-3 py-1 bg-blue-700 text-white text-sm rounded-full">
-            {chartData.length} data points
+            {filteredData.length} data points
           </div>
           <div className="px-3 py-1 bg-green-700 text-white text-sm rounded-full">
             Live Updates (60s window)
@@ -176,7 +181,7 @@ export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
               
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                  <LineChart data={filteredData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.5} />
                     <XAxis 
                       dataKey="time" 
@@ -234,7 +239,7 @@ export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
               
               <div className="mt-2 flex justify-between text-xs text-slate-400">
                 <span>60s window</span>
-                <span>{chartData.length} points</span>
+                <span>{filteredData.length} points</span>
               </div>
             </div>
           );
