@@ -198,14 +198,14 @@ export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
                       stroke={config.color} 
                       strokeDasharray="2 2" 
                       opacity={0.5}
-                      label={{ value: `Max: ${max.toFixed(1)}`, position: "topRight", fontSize: 10 }}
+                      label={{ value: `Max: ${max.toFixed(1)}`, position: "top", fontSize: 10 }}
                     />
                     <ReferenceLine 
                       y={min} 
                       stroke={config.color} 
                       strokeDasharray="2 2" 
                       opacity={0.5}
-                      label={{ value: `Min: ${min.toFixed(1)}`, position: "bottomRight", fontSize: 10 }}
+                      label={{ value: `Min: ${min.toFixed(1)}`, position: "bottom", fontSize: 10 }}
                     />
                     
                     <Line
