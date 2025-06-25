@@ -1,7 +1,8 @@
-
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, ReferenceLine } from 'recharts';
 import { ChartDataPoint } from '../pages/Index';
 import { useState } from 'react';
+import { Button } from './ui/button';
+import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 interface TelemetryChartsProps {
   chartData: ChartDataPoint[];
@@ -11,6 +12,11 @@ interface CustomTooltipProps {
   active?: boolean;
   payload?: any[];
   label?: string;
+}
+
+interface ZoomState {
+  left: number;
+  right: number;
 }
 
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
@@ -31,6 +37,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 
 export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
   const [selectedChart, setSelectedChart] = useState<string | null>(null);
+  const [zoomState, setZoomState] = useState<ZoomState | null>(null);
 
   // Filter data to show only the last 60 seconds
   const getFilteredData = () => {
@@ -44,18 +51,76 @@ export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
 
   const filteredData = getFilteredData();
 
+  // Get data based on zoom state
+  const getDisplayData = () => {
+    if (!zoomState || filteredData.length === 0) return filteredData;
+    
+    const totalDataPoints = filteredData.length;
+    const leftIndex = Math.floor((zoomState.left / 100) * totalDataPoints);
+    const rightIndex = Math.floor((zoomState.right / 100) * totalDataPoints);
+    
+    return filteredData.slice(leftIndex, rightIndex + 1);
+  };
+
+  const displayData = getDisplayData();
+
   const getCurrentValue = (field: keyof ChartDataPoint) => {
     if (filteredData.length === 0) return 0;
     return filteredData[filteredData.length - 1][field];
   };
 
   const getMinMaxValues = (field: keyof ChartDataPoint) => {
-    if (filteredData.length === 0) return { min: 0, max: 0 };
-    const values = filteredData.map(point => point[field] as number);
+    if (displayData.length === 0) return { min: 0, max: 0 };
+    const values = displayData.map(point => point[field] as number);
     return {
       min: Math.min(...values),
       max: Math.max(...values)
     };
+  };
+
+  // Zoom handlers
+  const handleZoomIn = () => {
+    if (!zoomState) {
+      setZoomState({ left: 25, right: 75 });
+    } else {
+      const center = (zoomState.left + zoomState.right) / 2;
+      const range = (zoomState.right - zoomState.left) / 2;
+      const newRange = Math.max(range * 0.7, 5); // Minimum 5% range
+      setZoomState({
+        left: Math.max(center - newRange, 0),
+        right: Math.min(center + newRange, 100)
+      });
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (!zoomState) return;
+    
+    const center = (zoomState.left + zoomState.right) / 2;
+    const range = (zoomState.right - zoomState.left) / 2;
+    const newRange = Math.min(range * 1.4, 50); // Maximum 100% range
+    
+    const newLeft = Math.max(center - newRange, 0);
+    const newRight = Math.min(center + newRange, 100);
+    
+    if (newLeft <= 0 && newRight >= 100) {
+      setZoomState(null);
+    } else {
+      setZoomState({ left: newLeft, right: newRight });
+    }
+  };
+
+  const handleZoomReset = () => {
+    setZoomState(null);
+  };
+
+  const handleMouseWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      handleZoomIn();
+    } else {
+      handleZoomOut();
+    }
   };
 
   const chartConfig = [
@@ -114,16 +179,51 @@ export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
     return tickItem.split(':').slice(1).join(':');
   };
 
+  const getTimeRangeText = () => {
+    if (!zoomState) return '60s window';
+    const range = zoomState.right - zoomState.left;
+    const seconds = Math.round((range / 100) * 60);
+    return `${seconds}s window`;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">Interactive Graphs</h2>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <div className="flex gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleZoomIn}
+              className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700"
+            >
+              <ZoomIn className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleZoomOut}
+              disabled={!zoomState}
+              className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700 disabled:opacity-50"
+            >
+              <ZoomOut className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleZoomReset}
+              disabled={!zoomState}
+              className="bg-slate-800 border-slate-600 text-white hover:bg-slate-700 disabled:opacity-50"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+          </div>
           <div className="px-3 py-1 bg-blue-700 text-white text-sm rounded-full">
-            {filteredData.length} data points
+            {displayData.length} data points
           </div>
           <div className="px-3 py-1 bg-green-700 text-white text-sm rounded-full">
-            Live Updates (60s window)
+            Live Updates ({getTimeRangeText()})
           </div>
         </div>
       </div>
@@ -179,9 +279,12 @@ export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
                 </span>
               </div>
               
-              <div className="h-48">
+              <div 
+                className="h-48 cursor-crosshair"
+                onWheel={handleMouseWheel}
+              >
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={filteredData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                  <LineChart data={displayData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.5} />
                     <XAxis 
                       dataKey="time" 
@@ -238,8 +341,8 @@ export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
               </div>
               
               <div className="mt-2 flex justify-between text-xs text-slate-400">
-                <span>60s window</span>
-                <span>{filteredData.length} points</span>
+                <span>{getTimeRangeText()} {zoomState && `(${zoomState.left.toFixed(0)}-${zoomState.right.toFixed(0)}%)`}</span>
+                <span>{displayData.length} points</span>
               </div>
             </div>
           );
