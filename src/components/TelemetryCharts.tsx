@@ -39,14 +39,14 @@ export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
   const [selectedChart, setSelectedChart] = useState<string | null>(null);
   const [zoomState, setZoomState] = useState<ZoomState | null>(null);
 
-  // Filter data to show only the last 60 seconds
+  // Filter data to show only the last 5 seconds
   const getFilteredData = () => {
     if (chartData.length === 0) return [];
     
     const now = Date.now();
-    const sixtySecondsAgo = now - 60000; // 60 seconds in milliseconds
+    const fiveSecondsAgo = now - 5000; // 5 seconds in milliseconds
     
-    return chartData.filter(point => point.timestamp > sixtySecondsAgo);
+    return chartData.filter(point => point.timestamp > fiveSecondsAgo);
   };
 
   const filteredData = getFilteredData();
@@ -180,9 +180,9 @@ export const TelemetryCharts = ({ chartData }: TelemetryChartsProps) => {
   };
 
   const getTimeRangeText = () => {
-    if (!zoomState) return '60s window';
+    if (!zoomState) return '5s window';
     const range = zoomState.right - zoomState.left;
-    const seconds = Math.round((range / 100) * 60);
+    const seconds = Math.round((range / 100) * 5);
     return `${seconds}s window`;
   };
 

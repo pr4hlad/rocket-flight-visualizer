@@ -78,8 +78,8 @@ const Index = () => {
 
           setChartData(prev => {
             const updated = [...prev, newDataPoint];
-            // Keep only data from last 60 seconds
-            const cutoffTime = now - 60000;
+            // Keep only data from last 5 seconds
+            const cutoffTime = now - 5000;
             return updated.filter(point => point.timestamp > cutoffTime);
           });
           
