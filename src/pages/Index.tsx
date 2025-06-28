@@ -99,8 +99,8 @@ const Index = () => {
     // Fetch data immediately
     fetchTelemetryData();
     
-    // Set up interval for live updates every 2 seconds
-    const interval = setInterval(fetchTelemetryData, 2000);
+    // Set up interval for live updates every 20ms
+    const interval = setInterval(fetchTelemetryData, 20);
     
     return () => clearInterval(interval);
   }, []);
